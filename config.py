@@ -1,0 +1,13 @@
+IMAGE_SIZE = 48
+BATCH_SIZE = 256
+WEIGHT_INIT = 0.05
+INIT_LR = 1e-3
+DECAY_LR = 0.95
+EPOCHS = 80
+KEEP_PROB = 0.5
+DECAY_STEP = 1000
+WEIGHT_DECAY = 1e-4
+
+MODEL_DIR = 'checkpoints/26022020'
+SMILE_FOLDER = './datasets/smile/'
+AGE_AND_GENDER_FOLDER = './datasets/age_and_gender/'
