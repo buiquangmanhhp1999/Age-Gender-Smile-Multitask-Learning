@@ -15,7 +15,7 @@ def batch_norm(x, n_out, phase_train=True, scope='bn'):
     Return:
         normed:      batch-normalized maps
     """
-    with tf.variable_scope(scope):
+    with tf.compat.v1.variable_scope(scope):
         beta = tf.Variable(tf.constant(0.0, shape=[n_out]), name='beta', trainable=True)
         gamma = tf.Variable(tf.constant(1.0, shape=[n_out]), name='gamma', trainable=True)
         batch_mean, batch_var = tf.nn.moments(x, [0, 1, 2], name='moments')
@@ -34,10 +34,10 @@ def batch_norm(x, n_out, phase_train=True, scope='bn'):
 
 
 def conv(name, x, filter_size, in_filters, out_filters, strides):
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         size = [filter_size, filter_size, in_filters, out_filters]
-        init = tf.truncated_normal_initializer(stddev=config.WEIGHT_INIT)
-        filters = tf.get_variable('DW', size, tf.float32, init)
+        init = tf.compat.v1.truncated_normal_initializer(stddev=config.WEIGHT_INIT)
+        filters = tf.compat.v1.get_variable('DW', size, tf.float32, init)
 
         return tf.nn.conv2d(x, filters, [1, strides, strides, 1], 'SAME')
 
@@ -48,7 +48,7 @@ def relu(x, leakiness=0.0):
 
 def FC(name, x, output_dim, keep_rate, activation='relu'):
     assert (activation == 'relu') or (activation == 'softmax') or (activation == 'linear')
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         dim = x.get_shape().as_list()
 
         # flatten
@@ -56,12 +56,12 @@ def FC(name, x, output_dim, keep_rate, activation='relu'):
         x = tf.reshape(x, [-1, dim])
 
         # init bias, weight
-        W = tf.get_variable('DW', [x.get_shape()[1], output_dim], initializer=tf.truncated_normal_initializer(
+        W = tf.compat.v1.get_variable('DW', [x.get_shape()[1], output_dim], initializer=tf.compat.v1.truncated_normal_initializer(
                                 stddev=config.WEIGHT_INIT))
 
-        b = tf.get_variable('bias', [output_dim], initializer=tf.constant_initializer())
+        b = tf.compat.v1.get_variable('bias', [output_dim], initializer=tf.constant_initializer())
 
-        x = tf.nn.xw_plus_b(x, W, b)
+        x = tf.compat.v1.nn.xw_plus_b(x, W, b)
 
         # Activation
         if activation == 'relu':
@@ -81,7 +81,7 @@ def max_pool(x, filter_size, strides):
 
 
 def VGG_ConvBlock(name, x, in_filters, out_filters, repeat, strides, phase_train):
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         for layer in range(repeat):
             scope_name = name + '_' + str(layer)
             x = conv(scope_name, x, 3, in_filters, out_filters, strides)

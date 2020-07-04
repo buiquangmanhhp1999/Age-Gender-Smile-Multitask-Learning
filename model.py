@@ -1,16 +1,15 @@
 import tensorflow as tf
 import os
-
 import config
 from data_provider import Datasets
 import utils
 
-tf.disable_eager_execution()
+tf.compat.v1.disable_eager_execution()
 
 
 class Model(object):
     def __init__(self, session, trainable=True, prediction=False):
-        self.global_step = tf.get_variable(name='global_step', initializer=tf.constant(0), trainable=False)
+        self.global_step = tf.compat.v1.get_variable(name='global_step', initializer=tf.constant(0), trainable=False)
         self.batch_size = config.BATCH_SIZE
         self.sess = session
         self.model_dir = config.MODEL_DIR
@@ -27,13 +26,13 @@ class Model(object):
             # Learning rate and train op
             # learning_rate = tf.train.exponential_decay(learning_rate=config.INIT_LR, global_step=self.global_step,
             # decay_steps=config.DECAY_STEP, decay_rate=config.DECAY_LR, staircase=True)
-            self.train_step = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(self.total_loss,
-                                                                                  global_step=self.global_step)
+            self.train_step = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-3).minimize(self.total_loss,
+                                                                                            global_step=self.global_step)
             # Input data
             self.data = Datasets(trainable=self.trainable, test_data_type='public_test')
 
         # Init checkpoints
-        self.saver_all = tf.train.Saver(tf.global_variables(), max_to_keep=5)
+        self.saver_all = tf.compat.v1.train.Saver(tf.compat.v1.global_variables(), max_to_keep=5)
         self.checkpoint_path = os.path.join(self.model_dir, 'model.ckpt')
         ckpt = tf.train.get_checkpoint_state(self.model_dir)
 
@@ -42,15 +41,15 @@ class Model(object):
             self.saver_all.restore(self.sess, ckpt.model_checkpoint_path)
         else:
             print('Created model with fresh parameters.')
-            self.sess.run(tf.global_variables_initializer())
+            self.sess.run(tf.compat.v1.global_variables_initializer())
 
     def _define_input(self):
-        self.input_images = tf.placeholder(tf.float32, [None, config.IMAGE_SIZE, config.IMAGE_SIZE, 1])
-        self.keep_prob = tf.placeholder(tf.float32)
-        self.phase_train = tf.placeholder(tf.bool)
+        self.input_images = tf.compat.v1.placeholder(tf.float32, [None, config.IMAGE_SIZE, config.IMAGE_SIZE, 1])
+        self.keep_prob = tf.compat.v1.placeholder(tf.float32)
+        self.phase_train = tf.compat.v1.placeholder(tf.bool)
         if not self.prediction:
-            self.input_labels = tf.placeholder(tf.float32, [None, 7])
-            self.input_indexes = tf.placeholder(tf.float32, [None])
+            self.input_labels = tf.compat.v1.placeholder(tf.float32, [None, 7])
+            self.input_indexes = tf.compat.v1.placeholder(tf.float32, [None])
 
     def _build_model(self):
         # Extract features
@@ -106,7 +105,7 @@ class Model(object):
 
         # Add l2 regularizer
         l2_loss = []
-        for var in tf.trainable_variables():
+        for var in tf.compat.v1.trainable_variables():
             if var.op.name.find(r'DW') > 0:
                 l2_loss.append(tf.nn.l2_loss(var))
 
@@ -117,7 +116,7 @@ class Model(object):
     @staticmethod
     def count_trainable_params():
         total_parameters = 0
-        for variable in tf.trainable_variables():
+        for variable in tf.compat.v1.trainable_variables():
             shape = variable.get_shape()
             variable_parameters = 1
             for dim in shape:
@@ -207,7 +206,7 @@ class Model(object):
         labels = []
 
         feed_dict = {self.input_images: image,
-                     self.keep_prob: 1,
+                     self.keep_prob: 0,
                      self.phase_train: self.trainable}
 
         smile_prediction_idx = self.sess.run(tf.argmax(self.y_smile_conv, axis=1), feed_dict=feed_dict)

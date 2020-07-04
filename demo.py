@@ -11,7 +11,7 @@ if __name__ == '__main__':
     arguments = utils.get_arguments()
     image_path = None
     video_path = None
-    session = tf.Session()
+    session = tf.compat.v1.Session()
 
     # load model multitask learning
     multitask_model = model.Model(session=session, trainable=False, prediction=True)
